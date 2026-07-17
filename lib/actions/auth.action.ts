@@ -1,66 +1,81 @@
 'use server';
-import { auth, db } from "@/firebass/admin";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+
 const TWO_WEEKS = 60 * 60 * 24 * 14;
+const BACKEND_URL = "http://localhost:8080";
 
 export async function signUp(params: SignUpParams){
-    const { uid, name, email } = params;
-    try{
-      const userRecord = await db.collection('users').doc(uid).get();
-      if (userRecord.exists){
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        const data = await res.json();
+        return data;
+    } catch (e) {
+        console.error('Error creating a user via Spring Boot:', e);
         return {
             success: false,
-            message: 'User already exists. Please sign in Instead'
-        }
-      }
-      await db.collection('users').doc(uid).set({name, email});
-      return {
-        success: true,
-        message: 'User created successfully',
-      }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-        console.error('Error creating a user', e);
-        if (e.code === 'auth/email-already-in-use'){
-            return { success: false, message: 'Email already in use' };
-        }
-   
-    return {
-        success: false,
-        message: 'Failed to create an account',
+            message: 'Failed to create an account'
+        };
     }
-}
 }
 
 export async function signIn(params: SignInParams){
-    const { email, idToken} = params;
     try {
-        const userRecord = await auth.getUserByEmail(email);
-        if(!userRecord){
-            return{
-                success: false,
-                message: 'User does not exist. Create an account instead.'
-            }
+        const res = await fetch(`${BACKEND_URL}/api/auth/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return { success: false, message: errData.message || 'User does not exist. Create an account instead.' };
         }
-        await setSessionCookie(idToken);
+        
+        const data = await res.json();
+        if (data.success && data.sessionCookie) {
+            const cookieStore = await cookies();
+            cookieStore.set('session', data.sessionCookie, {
+                maxAge: TWO_WEEKS,
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                path: '/',
+                sameSite: 'lax',
+            });
+            return { success: true };
+        }
+        return { success: false, message: data.message || 'Sign in failed' };
     } catch (e) {
-        console.log(e);
+        console.error("Sign in error via Spring Boot:", e);
+        return { success: false, message: "Sign in failed" };
     }
 }
 
 export async function setSessionCookie(idToken: string){
-    const cookieStore = await cookies();
-
-    const sessionCookie = await auth.createSessionCookie(idToken, {expiresIn: TWO_WEEKS   * 1000 });
-
-    cookieStore.set('session', sessionCookie,{
-        maxAge: TWO_WEEKS,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path:'/',
-        sameSite:'lax',
-    })
+    // This is now integrated inside the signin action or can be used as fallback
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken, email: "" })
+        });
+        const data = await res.json();
+        if (data.success && data.sessionCookie) {
+            const cookieStore = await cookies();
+            cookieStore.set('session', data.sessionCookie, {
+                maxAge: TWO_WEEKS,
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                path: '/',
+                sameSite: 'lax',
+            });
+        }
+    } catch (e) {
+        console.error("Error setting session cookie:", e);
+    }
 }
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -69,34 +84,26 @@ export async function getCurrentUser(): Promise<User | null> {
 
     if(!sessionCookie) return null;
     try {
-        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
-
-        const userRecord = await db. collection('users')
-        .doc(decodedClaims.uid)
-        .get();
-        if(!userRecord.exists)return null;
-        return {
-            ...userRecord.data(),
-            id: userRecord.id,
-        } as User;
+        const res = await fetch(`${BACKEND_URL}/api/auth/me?sessionCookie=${encodeURIComponent(sessionCookie)}`);
+        if (!res.ok) return null;
+        const user = await res.json();
+        return user;
     } catch (e) {
-        console.log('Error verifying session cookie', e);
+        console.log('Error verifying session cookie via Spring Boot:', e);
         return null;
     }
 }
 
 export async function isAuthenticated(){
     const user = await getCurrentUser();
-
     return !!user;
 }
 
 // Sign out user by clearing the session cookie
 export async function signOut() {
     const cookieStore = await cookies();
-  
     cookieStore.delete("session");
-    
-  }
+}
+
 
 
