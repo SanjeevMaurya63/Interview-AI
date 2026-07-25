@@ -8,7 +8,7 @@ The **IntervueAI** is a next-gen AI-powered mock interview platform built to hel
 
 What makes IntervueAI special is its ability to give smart, AI-generated feedback after each session including performance insights, improvement tips, and evaluation reports — so you're not just practicing, you're leveling up.
 
-
+## ✨ Features
 
 - 🔐 **User Authentication** — Sign Up and Sign In with JWT-based authentication (Spring Boot Security)
 - 🎛️ **Interactive Dashboard** — Manage your interview preparations with an intuitive interface
