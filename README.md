@@ -1,6 +1,6 @@
 # 🤖 IntervueAI - AI-Powered Mock Interviews
 
-
+Precision in Recruitment — AI-powered mock interview platform built with **Spring Boot (Java)** and **Vite + React (TypeScript)**.
 
 ## 🌟 Overview
 
