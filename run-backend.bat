@@ -1,4 +1,10 @@
 @echo off
-echo Starting Spring Boot Backend...
-powershell -ExecutionPolicy Bypass -File .\run-backend.ps1
+echo ========================================
+echo   IntervueAI - Starting Backend Server
+echo ========================================
+echo.
+cd /d "%~dp0backend"
+echo Building and running Spring Boot backend...
+mvn spring-boot:run
 pause
+

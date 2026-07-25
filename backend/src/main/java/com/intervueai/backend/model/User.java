@@ -1,6 +1,7 @@
 package com.intervueai.backend.model;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 
 @Entity
 @Table(name = "users")
@@ -8,7 +9,7 @@ public class User {
 
     @Id
     @Column(name = "id", length = 128)
-    private String id; // Firebase UID
+    private String id;
 
     @Column(name = "name")
     private String name;
@@ -16,13 +17,21 @@ public class User {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Column(name = "created_at", length = 50)
+    private String createdAt;
+
     public User() {
     }
 
-    public User(String id, String name, String email) {
+    public User(String id, String name, String email, String password) {
         this.id = id;
         this.name = name;
         this.email = email;
+        this.password = password;
+        this.createdAt = Instant.now().toString();
     }
 
     public String getId() {
@@ -47,5 +56,21 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 }

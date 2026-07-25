@@ -10,6 +10,7 @@ import com.intervueai.backend.repository.FeedbackRepository;
 import com.intervueai.backend.repository.InterviewRepository;
 import com.intervueai.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,23 +31,32 @@ public class SqlDatabaseService {
     @Autowired
     private FeedbackRepository feedbackRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // ============================================================
     // USER OPERATIONS
     // ============================================================
 
-    public boolean userExists(String uid) {
-        return userRepository.existsById(uid);
+    public boolean userExistsByEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 
-    public void saveUser(String uid, String name, String email) {
-        User user = new User(uid, name, email);
-        userRepository.save(user);
+    public User saveUser(String name, String email, String password) {
+        String id = UUID.randomUUID().toString();
+        String encodedPassword = passwordEncoder.encode(password);
+        User user = new User(id, name, email, encodedPassword);
+        return userRepository.save(user);
     }
 
-    public User getUser(String uid) {
-        return userRepository.findById(uid).orElse(null);
+    public User getUser(String id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     // ============================================================

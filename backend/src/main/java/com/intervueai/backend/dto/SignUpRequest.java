@@ -1,7 +1,6 @@
 package com.intervueai.backend.dto;
 
 public class SignUpRequest {
-    private String uid;
     private String name;
     private String email;
     private String password;
@@ -9,19 +8,10 @@ public class SignUpRequest {
     public SignUpRequest() {
     }
 
-    public SignUpRequest(String uid, String name, String email, String password) {
-        this.uid = uid;
+    public SignUpRequest(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
-    }
-
-    public String getUid() {
-        return uid;
-    }
-
-    public void setUid(String uid) {
-        this.uid = uid;
     }
 
     public String getName() {

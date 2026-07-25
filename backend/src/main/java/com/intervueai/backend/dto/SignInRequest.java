@@ -1,15 +1,23 @@
 package com.intervueai.backend.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public class SignInRequest {
+
+    @Email
+    @NotBlank
     private String email;
-    private String idToken;
+
+    @NotBlank
+    private String password;
 
     public SignInRequest() {
     }
 
-    public SignInRequest(String email, String idToken) {
+    public SignInRequest(String email, String password) {
         this.email = email;
-        this.idToken = idToken;
+        this.password = password;
     }
 
     public String getEmail() {
@@ -20,11 +28,11 @@ public class SignInRequest {
         this.email = email;
     }
 
-    public String getIdToken() {
-        return idToken;
+    public String getPassword() {
+        return password;
     }
 
-    public void setIdToken(String idToken) {
-        this.idToken = idToken;
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

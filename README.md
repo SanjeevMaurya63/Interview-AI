@@ -1,121 +1,85 @@
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+# 🤖 IntervueAI - AI-Powered Mock Interviews
 
-<Dialog>
-  <DialogTrigger asChild>
-    <Button>Open Dialog</Button>
-  </DialogTrigger>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Dialog Title</DialogTitle>
-      <DialogDescription>Dialog description</DialogDescription>
-    </DialogHeader>
-    Content here
-  </DialogContent>
-</Dialog><Checkbox id="terms" /><Textarea placeholder="Type your message here." />npx shadcn@latest add sidebar-08
-# 🤖 IntervueAI - Precision in Recruitment 
-![intervueai](https://github.com/user-attachments/assets/d26c8001-18ba-4777-bcd9-f80c479f3557)
-
-
-
+Precision in Recruitment — AI-powered mock interview platform built with **Spring Boot (Java)** and **Vite + React (TypeScript)**.
 
 ## 🌟 Overview
+
 The **IntervueAI** is a next-gen AI-powered mock interview platform built to help students and professionals prepare for interviews in a way that actually feels real. It goes beyond generic questions using your resume, job role, and round type to generate personalized, industry-relevant interviews.
 
-  What makes IntervueAI special is its ability to give smart, AI-generated feedback after each session including performance insights, improvement tips, and evaluation reports so you’re not just practicing, you’re leveling up.
+What makes IntervueAI special is its ability to give smart, AI-generated feedback after each session including performance insights, improvement tips, and evaluation reports — so you're not just practicing, you're leveling up.
 
 ## ✨ Features
-- 🔐 **User Authentication**
-  - Sign Up and Sign In using password/email authentication handled by Firebase.
 
-- 🎛️ **Interactive Dashboard**
-  - Provides an intuitive interface for managing interview preparations.
-    
-- 🧑‍💻 **No Form-Based Flow**
-  - Say goodbye to static input forms just log in, speak, and start your interview. It's natural, voice-first interaction from the start.
-
-- 🤖 **AI-Powered Interview Generation**
-  - Personalized mock interviews based on your resume, job role, and round type using Vapi voice assistants and Google Gemini.
-
-
-- 🧠 **Digital AI Interviewers**
-  - Interact with intelligent AI personas inspired by iconic digital characters, making practice more immersive and less robotic.
-
-- 📝 **Real-Time Transcription**
-  - Get instant AI-generated feedback after each session, including ratings, improvement tips, and evaluation summaries.
-
-
+- 🔐 **User Authentication** — Sign Up and Sign In with JWT-based authentication (Spring Boot Security)
+- 🎛️ **Interactive Dashboard** — Manage your interview preparations with an intuitive interface
+- 🤖 **AI-Powered Interview Generation** — Personalized mock interviews using Google Gemini AI
+- 📝 **Real-Time Feedback** — AI-generated feedback after each session with ratings, improvement tips, and evaluation summaries
 
 ## 🛠️ Tech Stack
-- ⚛ **Next.js**
-- 🔥 **Firebase**
-- 🎨 **Tailwind CSS**
-- 🗣️ **Vapi AI**
-- 🧩 **shadcn/ui**
-- 🧠 **Google Gemini**
 
+### Backend
+- ☕ **Java 17** + **Spring Boot 3.4**
+- 🔒 **Spring Security** + **JWT Authentication**
+- 🗄️ **MySQL** + **Spring Data JPA**
+- 🧠 **Spring AI** + **Google Gemini**
 
-## <a name="quick-start">🤸 Quick Start</a>
+### Frontend
+- ⚛️ **React 19** + **TypeScript**
+- ⚡ **Vite** (build tool)
+- 🎨 **Tailwind CSS v4**
+- 🧩 **React Router v7**
+- 📡 **Axios** (HTTP client)
 
-Follow these steps to set up the project locally on your machine.
+## 🚀 Quick Start
 
+### Prerequisites
+- Java 17+
+- Node.js 18+
+- MySQL Server
+- Maven
 
-**Installation**
+### Backend Setup
 
-Install the project dependencies using npm:
+1. **Configure MySQL** — Ensure MySQL is running on `localhost:3306`
 
-```bash
-npm install
-```
+2. **Set environment variables** (or update `application.properties`):
+   ```
+   DB_USERNAME=your_mysql_username
+   DB_PASSWORD=your_mysql_password
+   GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
+   ```
 
-**Set Up Environment Variables**
+3. **Run the backend**:
+   ```bash
+   cd backend
+   mvn spring-boot:run
+   ```
+   Server starts on `http://localhost:8080`
 
-Create a new file named `.env.local` in the root of your project and add the following content:
+### Frontend Setup
 
-```env
-NEXT_PUBLIC_VAPI_WEB_TOKEN=
-NEXT_PUBLIC_VAPI_WORKFLOW_ID=
+1. **Install dependencies**:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-GOOGLE_GENERATIVE_AI_API_KEY=
+2. **Run dev server**:
+   ```bash
+   npm run dev
+   ```
+   Opens on `http://localhost:5173` (proxies API to backend)
 
-NEXT_PUBLIC_BASE_URL=
+### Using Run Scripts
 
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
-```
-
-Replace the placeholder values with your actual **[Firebase](https://firebase.google.com/)**, **[Vapi](https://vapi.ai/?utm_source=youtube&utm_medium=video&utm_campaign=jsmastery_recruitingpractice&utm_content=paid_partner&utm_term=recruitingpractice)** credentials.
-
-**Running the Project**
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the project.
-
-## 🤝 Contributions
-This project is **open-source forever!** Contributions are welcome. Feel free to:
-- 🎨 Improve UI/UX
-- 🧠 Optimize AI algorithms
-- 🗄️ Enhance database efficiency
-- 🚀 Add new features
-
-Fork the repository, make changes, and submit a **pull request**!
+- `run-backend.bat` — Starts Spring Boot backend
+- `run-frontend.bat` — Starts Vite React frontend
 
 ## 📜 License
+
 This project is licensed under the **MIT License**.
 
 ---
 
-### **🎉 Happy Coding & Best of Luck for Your Interviews! 🚀**
+### 🎉 Happy Coding & Best of Luck for Your Interviews! 🚀
+

@@ -3,11 +3,13 @@ package com.intervueai.backend.controller;
 import com.intervueai.backend.dto.SignInRequest;
 import com.intervueai.backend.dto.SignUpRequest;
 import com.intervueai.backend.model.User;
-import com.intervueai.backend.service.FirebaseService;
+import com.intervueai.backend.security.JwtService;
 import com.intervueai.backend.service.SqlDatabaseService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -19,24 +21,36 @@ import java.util.Map;
 public class AuthController {
 
     @Autowired
-    private FirebaseService firebaseService;
-
-    @Autowired
     private SqlDatabaseService sqlDatabaseService;
 
-    // Register a new user (stores in MySQL)
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // Register a new user
     @PostMapping("/signup")
-    public ResponseEntity<Map<String, Object>> signUp(@RequestBody SignUpRequest req) {
+    public ResponseEntity<Map<String, Object>> signUp(@Valid @RequestBody SignUpRequest req) {
         Map<String, Object> response = new HashMap<>();
         try {
-            if (sqlDatabaseService.userExists(req.getUid())) {
+            if (sqlDatabaseService.userExistsByEmail(req.getEmail())) {
                 response.put("success", false);
                 response.put("message", "User already exists. Please sign in instead.");
                 return ResponseEntity.ok(response);
             }
-            sqlDatabaseService.saveUser(req.getUid(), req.getName(), req.getEmail());
+
+            User user = sqlDatabaseService.saveUser(req.getName(), req.getEmail(), req.getPassword());
+            String token = jwtService.generateToken(user.getId());
+
             response.put("success", true);
             response.put("message", "User created successfully");
+            response.put("token", token);
+            response.put("user", Map.of(
+                "id", user.getId(),
+                "name", user.getName(),
+                "email", user.getEmail()
+            ));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -45,33 +59,33 @@ public class AuthController {
         }
     }
 
-    // Verify Firebase token and return session cookie
+    // Sign in with email & password
     @PostMapping("/signin")
-    public ResponseEntity<Map<String, Object>> signIn(@RequestBody SignInRequest req) {
+    public ResponseEntity<Map<String, Object>> signIn(@Valid @RequestBody SignInRequest req) {
         Map<String, Object> response = new HashMap<>();
         try {
-            // Verify Firebase ID token
-            String uid = firebaseService.verifySessionToken(req.getIdToken());
-            if (uid == null) {
+            User user = sqlDatabaseService.getUserByEmail(req.getEmail());
+            if (user == null) {
                 response.put("success", false);
-                response.put("message", "Invalid login token.");
+                response.put("message", "User does not exist. Create an account instead.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
 
-            // Check/save user in MySQL
-            User user = sqlDatabaseService.getUser(uid);
-            if (user == null) {
-                sqlDatabaseService.saveUser(uid, req.getEmail().split("@")[0], req.getEmail());
-                user = sqlDatabaseService.getUser(uid);
+            if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+                response.put("success", false);
+                response.put("message", "Invalid password.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
 
-            // Create Firebase session cookie
-            long twoWeeksMillis = 1000L * 60 * 60 * 24 * 14;
-            String sessionCookie = firebaseService.createSessionCookie(req.getIdToken(), twoWeeksMillis);
+            String token = jwtService.generateToken(user.getId());
 
             response.put("success", true);
-            response.put("sessionCookie", sessionCookie);
-            response.put("user", user);
+            response.put("token", token);
+            response.put("user", Map.of(
+                "id", user.getId(),
+                "name", user.getName(),
+                "email", user.getEmail()
+            ));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -80,21 +94,34 @@ public class AuthController {
         }
     }
 
-    // Retrieve current user from MySQL using session cookie (verified by Firebase)
+    // Get current user from token
     @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(@RequestParam("sessionCookie") String sessionCookie) {
+    public ResponseEntity<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            String uid = firebaseService.verifySessionCookie(sessionCookie);
-            if (uid == null) {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            User user = sqlDatabaseService.getUser(uid);
+
+            String token = authHeader.substring(7);
+            String userId = jwtService.extractUserId(token);
+
+            if (!jwtService.isTokenValid(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            User user = sqlDatabaseService.getUser(userId);
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
-            return ResponseEntity.ok(user);
+
+            response.put("id", user.getId());
+            response.put("name", user.getName());
+            response.put("email", user.getEmail());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
+
